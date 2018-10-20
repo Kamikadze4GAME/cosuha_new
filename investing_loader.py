@@ -27,10 +27,10 @@ class Prices:
         self.date_time = date_time
         
         self.page = page
-        table = BeautifulSoup(page)\
+        html_table = BeautifulSoup(page)\
                     .find('table', id='crypto_currencies_189')
         
-        head = table.find('thead')
+        head = html_table.find('thead')
         columns = [ tag.text for tag in head('th')[1:-1] ]
         ex_name_columns = list(filter(lambda i: columns[i] == 'Exchange', range(len(columns))))
         if len(ex_name_columns) != 1:
@@ -48,14 +48,42 @@ class Prices:
         
         rows  = []
         row_index = []
-        for row in table.find('tbody')('tr'):
+        for row in html_table.find('tbody')('tr'):
             fields = row('td')
             row_index.append(fields[ex_name_column+1].text)
             rows.append([f.text for f in fields[1:ex_name_column+1] + fields[ex_name_column+2:-1]])
         
-        self.data = DataFrame(data=rows, columns=columns, index=row_index, dtype=str)
+        self.table = DataFrame(data=rows, columns=columns, index=row_index, dtype=str)
+    
+    @classmethod
+    def vol_conv(s):
+        m = re.match(r'([\d.]+)\s*([KkMmGg])\s*$', s)
+        num = float(m.group(1))
+        exp = m.group(2).lower()
         
+        if exp == '':
+            pass
+        elif exp == 'k':
+            num *= 1000
+        elif exp == 'm':
+            num *= 1000000
+        elif exp == 'g':
+            num *= 1000000000
+        
+        return num
+    
+    @classmethod
+    def val_conv(s):
+        return float(s.relace(',','')
+    
+    def time_conv(self, s):
+        m = re.match(r'(?P<h>\d\d):(?P<m>\d\d):(?P<s>\d\d)', s)
+    
+    
     def __getitem__(self, key):
-        pass
+        serie = self.table.loc[key]
+        
+        vol = self.vol_conv(serie['Vol.'])
+
 
 

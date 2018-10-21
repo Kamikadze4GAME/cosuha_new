@@ -8,7 +8,7 @@ class AbstractPredictor(ABC):
     predictNext повертає прогноз на один крок вперед
     '''
     @abstractmethod
-    def predictNext(time_delta):
+    def predictNext(self, time_delta):
         '''
         time_delta - На скільки секунд вперед робиться прогноз.
                      Цей параметр можна ігнорити.
@@ -16,10 +16,17 @@ class AbstractPredictor(ABC):
         pass
     
     @abstractmethod
-    def feed(new_data):
+    def feed(self, new_data):
         '''
         new_data = pandas.DataFrame(index = pandas.DatetimeIndex([ ... ]),
                                     columns = ['Last', 'Open', 'High', 'Low', 'Vol.'],
                                     data = ...)
         '''
         pass
+
+class StupidPredictor(AbstractPredictor):
+    def feed(self, new_data):
+        self.last_price = new_data['Last'].iloc[-1]
+    
+    def predictNext(self, time_delta):
+        return self.last_price

@@ -3,6 +3,8 @@ import sys
 import json
 from datetime import datetime
 
+import numpy as np
+
 from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
 from PyQt4 import uic
 
@@ -12,8 +14,9 @@ from matplotlib.figure import Figure
 import matplotlib.finance as fin
 
 import matplotlib.pyplot as plt
-#from matplotlib.dates import DateFormatter
-#import matplotlib.dates as md
+from matplotlib.dates import DateFormatter
+import matplotlib.dates as md
+#from matplotlib.ticker import MaxNLocator
 plt.ion()
 
 from game_window import Ui_gameWindow
@@ -46,9 +49,9 @@ class MainWindow(Ui_gameWindow):
         # create an axis
         self.axis = self.figure.add_subplot(111)
         self.axis.tick_params(axis='x', direction='out', pad=8)
-        #xfmt = DateFormatter('%Y-%m-%d %H:%M:%S')
-        #self.axis.xaxis_date()
-        #self.axis.xaxis.set_major_formatter(xfmt)
+        self.xfmt = DateFormatter('%Y-%m-%d %H:%M')
+        
+        self.axis.xaxis_date()
         
         # set the layout
         self.plot_layout.addWidget(self.toolbar)
@@ -63,17 +66,28 @@ class MainWindow(Ui_gameWindow):
             return
         
         self.axis.clear()
-        #self.axis.set_xticks(self.hist['t'])
+        #self.axis.set_xticks(md.epoch2num(self.hist['t']))
         #self.axis.set_xticklabels([datetime.fromtimestamp(t).isoformat(' ') for t in self.hist['t']],
         #                          rotation=45)
-        fin.candlestick2_ochl(self.axis,
-                              self.hist['o'],
-                              self.hist['c'],
-                              self.hist['h'],
-                              self.hist['l'],
+        
+        try:
+            cs_width = (self.hist['t'][1] - self.hist['t'][0]) / (24*3600)
+        except:
+            cs_width = 1
+        
+        fin.candlestick_ochl(self.axis,
+                              np.vstack((md.epoch2num(self.hist['t']),
+                                         self.hist['o'],
+                                         self.hist['c'],
+                                         self.hist['h'],
+                                         self.hist['l'])).T,
                               colorup='g',
                               colordown='r',
-                              width=1)
+                              width=cs_width
+                              )
+        #self.axis.xaxis.set_major_locator(MaxNLocator())
+        self.axis.xaxis.set_major_formatter(self.xfmt)
+        plt.setp(self.axis.get_xticklabels(), rotation=30, horizontalalignment='right') 
         # refresh canvas
         self.canvas.draw()
     

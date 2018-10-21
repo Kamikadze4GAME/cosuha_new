@@ -31,6 +31,7 @@ class MainWindow(Ui_gameWindow):
         
         init_fchooser(self.fname_button, self.fname_edit, 'Dataset file')
         self.open_button.clicked.connect(self.load)
+        self.run_button.clicked.connect(self.run_trade)
     
     def setupUi(self, gameWindow):
         super().setupUi(gameWindow)
@@ -47,7 +48,8 @@ class MainWindow(Ui_gameWindow):
         self.toolbar = NavigationToolbar(self.canvas, self.plot_frame)
         
         # create an axis
-        self.axis = self.figure.add_subplot(111)
+        self.axis, self.ax_basecache, self.ax_altcache = \
+            self.figure.subplots(3, 1, sharex='all')
         self.axis.tick_params(axis='x', direction='out', pad=8)
         self.xfmt = DateFormatter('%Y-%m-%d %H:%M')
         
@@ -65,10 +67,7 @@ class MainWindow(Ui_gameWindow):
             QMessageBox.critical(self.gameWindow, 'File load error', str(e))
             return
         
-        self.axis.clear()
-        #self.axis.set_xticks(md.epoch2num(self.hist['t']))
-        #self.axis.set_xticklabels([datetime.fromtimestamp(t).isoformat(' ') for t in self.hist['t']],
-        #                          rotation=45)
+        self.clear()
         
         try:
             cs_width = (self.hist['t'][1] - self.hist['t'][0]) / (24*3600)
@@ -85,14 +84,19 @@ class MainWindow(Ui_gameWindow):
                               colordown='r',
                               width=cs_width
                               )
-        #self.axis.xaxis.set_major_locator(MaxNLocator())
-        self.axis.xaxis.set_major_formatter(self.xfmt)
-        plt.setp(self.axis.get_xticklabels(), rotation=30, horizontalalignment='right') 
-        # refresh canvas
+        
         self.canvas.draw()
     
     def show(self):
         self.gameWindow.show()
+    
+    def clear(self):
+        self.axis.clear()
+        self.axis.xaxis.set_major_formatter(self.xfmt)
+        self.axis.tick_params(labelbottom=True)
+    
+    def run_trade(self):
+        pass
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -64,8 +64,8 @@ class MainWindow(Ui_gameWindow):
         
         self.axis.clear()
         #self.axis.set_xticks(self.hist['t'])
-        self.axis.set_xticklabels([datetime.fromtimestamp(t).isoformat(' ') for t in self.hist['t']],
-                                  rotation=45)
+        #self.axis.set_xticklabels([datetime.fromtimestamp(t).isoformat(' ') for t in self.hist['t']],
+        #                          rotation=45)
         fin.candlestick2_ochl(self.axis,
                               self.hist['o'],
                               self.hist['c'],

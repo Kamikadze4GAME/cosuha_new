@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>789</width>
+    <width>950</width>
     <height>421</height>
    </rect>
   </property>
@@ -113,6 +113,11 @@
             <string>FearfulTrader</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>MartingaleTrader</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item>
@@ -133,6 +138,11 @@
           <item>
            <property name="text">
             <string>StupidPredictor</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>RandomPredictor</string>
            </property>
           </item>
          </widget>
@@ -166,6 +176,26 @@
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="altcache_spin"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Min. bid:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="min_bid_spin">
+          <property name="minimum">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.010000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.010000000000000</double>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer">

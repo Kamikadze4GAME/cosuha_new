@@ -1,5 +1,5 @@
 
-import sys
+import sys, traceback
 import json
 from datetime import datetime
 
@@ -138,16 +138,27 @@ class MainWindow(Ui_gameWindow):
             return
             
         if self.predictor_combo.currentText() == 'StupidPredictor':
-            predictor = StupidPredictor()
+            predictor_class = StupidPredictor
+        elif self.predictor_combo.currentText() == 'RandomPredictor':
+            from predictor import RandomPredictor
+            predictor_class = RandomPredictor
         else:
             return
         
+        predictor = predictor_class()
+        
         if self.trader_combo.currentText() == 'FearfulTrader':
-            self.trader = FearfulTrader(predictor,
-                                        self.basecache_spin.value(),
-                                        self.altcache_spin.value()  )
+            trader_class = FearfulTrader
+        elif self.trader_combo.currentText() == 'MartingaleTrader':
+            from martingaleTrader import MartingaleTrader
+            trader_class = MartingaleTrader
         else:
             return
+        
+        self.trader = trader_class( predictor,
+                                    self.basecache_spin.value(),
+                                    self.altcache_spin.value(),
+                                    min_bid = self.min_bid_spin.value()  )
         
         hist_df = prices_to_DataFrame(self.hist)
         for i in range(len(hist_df)):

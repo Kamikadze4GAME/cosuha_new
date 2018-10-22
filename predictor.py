@@ -1,5 +1,6 @@
 
 from abc import ABC, abstractmethod
+import random
 
 class AbstractPredictor(ABC):
     '''
@@ -30,3 +31,7 @@ class StupidPredictor(AbstractPredictor):
     
     def predictNext(self, time_delta):
         return self.last_price
+
+class RandomPredictor(StupidPredictor):
+    def predictNext(self, time_delta):
+        return random.gauss(self.last_price, 1)

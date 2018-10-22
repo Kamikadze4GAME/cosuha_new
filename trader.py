@@ -54,7 +54,7 @@ class Trader(ABC):
         prediction = self.predictor.predictNext(time_delta)
         self.predictions = \
             self.predictions.append(
-                Series( index=[self.iter_counter],
+                Series( index=[self.iter_counter+1],
                         data =[prediction] ))
         
         buy = self.make_choice(prediction, time_delta)

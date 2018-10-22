@@ -1,11 +1,14 @@
 
 from abc import ABC, abstractmethod
-from pandas import Series
+from pandas import Series, DatetimeIndex
+import numpy as np
+from matplotlib.dates import epoch2num
 
 class Trader(ABC):
     def __init__(self, predictor, start_basecache=1000, start_altcache=0):
         self.basecache = Series(index=[0], data=[start_basecache])
         self.altcache  = Series(index=[0], data=[start_altcache])
+        self.predictions= Series()
         self.predictor = predictor
         self.iter_counter = 0
         
@@ -49,6 +52,10 @@ class Trader(ABC):
         assert len(self.basecache) == len(self.altcache)
         
         prediction = self.predictor.predictNext(time_delta)
+        self.predictions = \
+            self.predictions.append(
+                Series( index=[self.iter_counter],
+                        data =[prediction] ))
         
         buy = self.make_choice(prediction, time_delta)
         if -buy > self.altcache.iloc[-1]:
@@ -80,6 +87,20 @@ class Trader(ABC):
         Negative values means "sell".
         '''
         return 0
+
+def iterSerie2timeSerie(time, serie):
+    return serie.reindex(
+            DatetimeIndex(
+                np.append(np.asarray(time),
+                          [time[-1] + (time[-1] - time[-2])]
+                         )[serie.index-1]*10**9) 
+           )
+
+def iterSerie2mlrow(time, serie):
+    return epoch2num(np.append(np.asarray(time),
+                               [time[-1] + (time[-1] - time[-2])]
+                              )[serie.index-1]
+                    ), np.asarray(serie)
 
 class FearfulTrader(Trader):
     def make_choice(self, prediction, time_delta=None):

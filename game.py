@@ -10,6 +10,7 @@ from PyQt4 import uic
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.dates import epoch2num
 from matplotlib.figure import Figure
 try:
     import matplotlib.finance as fin
@@ -24,10 +25,16 @@ plt.ion()
 
 from game_window import Ui_gameWindow
 from filename_chooser import init_fchooser
+from predictor import StupidPredictor
+from trader import FearfulTrader, iterSerie2mlrow
+from investing_loader import prices_to_DataFrame
 
 class MainWindow(Ui_gameWindow):
     def __init__(self):
         super().__init__()
+        
+        self.hist = None
+        self.lines = []
         
         self.gameWindow = QMainWindow()
         self.setupUi(self.gameWindow)
@@ -56,11 +63,11 @@ class MainWindow(Ui_gameWindow):
         self.axis.tick_params(axis='x', direction='out', pad=8)
         self.xfmt = DateFormatter('%Y-%m-%d %H:%M')
         
-        self.axis.xaxis_date()
-        
         # set the layout
         self.plot_layout.addWidget(self.toolbar)
         self.plot_layout.addWidget(self.canvas)
+        
+        self.reposition()
     
     def load(self):
         try:
@@ -94,12 +101,89 @@ class MainWindow(Ui_gameWindow):
         self.gameWindow.show()
     
     def clear(self):
-        self.axis.clear()
-        self.axis.xaxis.set_major_formatter(self.xfmt)
-        self.axis.tick_params(labelbottom=True)
+        self.axis        .clear()
+        self.ax_basecache.clear()
+        self.ax_altcache .clear()
+        self.reposition()
+        
+        self.trader = None
     
+    def reposition(self):
+        self.axis           .xaxis.set_major_formatter(self.xfmt)
+        self.axis           .tick_params(labelbottom=True)
+        self.ax_basecache   .xaxis.set_major_formatter(self.xfmt)
+        self.ax_basecache   .tick_params(labelbottom=True)
+        self.ax_altcache    .xaxis.set_major_formatter(self.xfmt)
+        self.ax_altcache    .tick_params(labelbottom=True)
+        
+        self.axis           .xaxis_date()
+        self.ax_basecache   .xaxis_date()
+        self.ax_altcache    .xaxis_date()
+        
+        self.axis           .legend()
+        self.ax_basecache   .legend()
+        self.ax_altcache    .legend()
+        
+        if self.hist is not None:
+            a = epoch2num(self.hist['t'][0 ])
+            b = epoch2num(self.hist['t'][-1])
+            d = (b-a)*0.05
+            self.axis.set_xlim(a-d, b+d)
+        
+        
+        self.canvas.draw()
+        
     def run_trade(self):
-        pass
+        if self.hist is None or len(self.hist['t']) == 0:
+            return
+            
+        if self.predictor_combo.currentText() == 'StupidPredictor':
+            predictor = StupidPredictor()
+        else:
+            return
+        
+        if self.trader_combo.currentText() == 'FearfulTrader':
+            self.trader = FearfulTrader(predictor,
+                                        self.basecache_spin.value(),
+                                        self.altcache_spin.value()  )
+        else:
+            return
+        
+        hist_df = prices_to_DataFrame(self.hist)
+        for i in range(len(hist_df)):
+            self.trader.feed(hist_df[i:i+1])
+            try:
+                dt = self.hist['t'][i+1] - self.hist['t'][i]
+            except IndexError:
+                dt = self.hist['t'][-1] - self.hist['t'][-2]
+            self.trader.move(dt)
+        
+        for l in self.lines:
+            l.remove()
+        
+        self.lines.append(
+            self.axis.plot(
+                *iterSerie2mlrow(self.hist['t'], self.trader.predictions),
+                label='prediction', color='C2')
+        )
+        self.lines.append(
+            self.ax_basecache.plot(
+                *iterSerie2mlrow(self.hist['t'], self.trader.basecache),
+                label='basecache', color='C0')
+        )
+        self.lines.append(
+            self.ax_basecache.plot(
+                *iterSerie2mlrow(self.hist['t'], self.trader.cumcache),
+                label='cumcache', color='C1')
+        )
+        self.lines.append(
+            self.ax_altcache.plot(
+                *iterSerie2mlrow(self.hist['t'], self.trader.altcache),
+                label='altcache', color='C0')
+        )
+        
+        self.reposition()
+
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)

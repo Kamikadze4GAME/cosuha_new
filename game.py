@@ -11,7 +11,10 @@ from PyQt4 import uic
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-import matplotlib.finance as fin
+try:
+    import matplotlib.finance as fin
+except:
+    import mpl_finance as fin
 
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter

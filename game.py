@@ -159,24 +159,29 @@ class MainWindow(Ui_gameWindow):
             self.trader.move(dt)
         
         for l in self.lines:
-            l.remove()
+            try:
+                l.remove()
+            except Exception:
+                traceback.print_exc()
         
-        self.lines.append(
+        self.lines = []
+        
+        self.lines.extend(
             self.axis.plot(
                 *iterSerie2mlrow(self.hist['t'], self.trader.predictions),
                 label='prediction', color='C2')
         )
-        self.lines.append(
+        self.lines.extend(
             self.ax_basecache.plot(
                 *iterSerie2mlrow(self.hist['t'], self.trader.basecache),
                 label='basecache', color='C0')
         )
-        self.lines.append(
+        self.lines.extend(
             self.ax_basecache.plot(
                 *iterSerie2mlrow(self.hist['t'], self.trader.cumcache),
                 label='cumcache', color='C1')
         )
-        self.lines.append(
+        self.lines.extend(
             self.ax_altcache.plot(
                 *iterSerie2mlrow(self.hist['t'], self.trader.altcache),
                 label='altcache', color='C0')

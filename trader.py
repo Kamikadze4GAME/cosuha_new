@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.dates import epoch2num
 
 class Trader(ABC):
-    def __init__(self, predictor, start_basecache=1000, start_altcache=0):
+    def __init__(self, predictor, start_basecache=1000, start_altcache=0, *args, **kwargs):
         self.basecache = Series(index=[0], data=[start_basecache])
         self.altcache  = Series(index=[0], data=[start_altcache])
         self.predictions= Series()
@@ -54,7 +54,7 @@ class Trader(ABC):
         prediction = self.predictor.predictNext(time_delta)
         self.predictions = \
             self.predictions.append(
-                Series( index=[self.iter_counter+1],
+                Series( index=[self.iter_counter],
                         data =[prediction] ))
         
         buy = self.make_choice(prediction, time_delta)
@@ -99,7 +99,7 @@ def iterSerie2timeSerie(time, serie):
 def iterSerie2mlrow(time, serie):
     return epoch2num(np.append(np.asarray(time),
                                [time[-1] + (time[-1] - time[-2])]
-                              )[serie.index-1]
+                              )[serie.index]
                     ), np.asarray(serie)
 
 class FearfulTrader(Trader):

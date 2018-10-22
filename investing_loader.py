@@ -42,7 +42,7 @@ def prices_to_DataFrame(j):
     
     return DataFrame(
         index=DatetimeIndex([t*10**9 for t in j['t']]),
-        data={  'Last':j['l'],
+        data={  'Last':j['c'],
                 'Open':j['o'],
                 'High':j['h'],
                 'Low' :j['l'],

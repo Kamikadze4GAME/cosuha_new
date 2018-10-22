@@ -120,9 +120,9 @@ class MainWindow(Ui_gameWindow):
         self.ax_basecache   .xaxis_date()
         self.ax_altcache    .xaxis_date()
         
-        self.axis           .legend()
-        self.ax_basecache   .legend()
-        self.ax_altcache    .legend()
+        self.axis           .legend(loc='upper right')
+        self.ax_basecache   .legend(loc='upper right')
+        self.ax_altcache    .legend(loc='upper right')
         
         if self.hist is not None:
             a = epoch2num(self.hist['t'][0 ])
